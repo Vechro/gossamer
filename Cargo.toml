@@ -1,0 +1,28 @@
+[package]
+name = "keyva"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3.3.2"
+askama = "0.10.5"
+dotenv = "0.15.0"
+harsh = "0.2.1"
+lazy_static = "1.4.0"
+rocksdb = { version = "0.17.0", features = ["multi-threaded-cf"] }
+serde = "1.0.127"
+thiserror = "1.0.26"
+url = "2.2.2"
+
+[lib]
+name = "keyva"
+path = "src/lib.rs"
+
+[[bin]]
+name = "keyva"
+path = "src/bin/main.rs"
+
+[profile.dev.package."*"]
+opt-level = 3
