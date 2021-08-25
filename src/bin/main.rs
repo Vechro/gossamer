@@ -1,5 +1,5 @@
 use actix_web::{
-    error::BlockingError, get, http::header, middleware, post, web, App, HttpRequest, HttpResponse,
+    error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse,
     HttpServer, Responder, Result,
 };
 use askama::Template;
@@ -33,7 +33,7 @@ async fn index() -> impl Responder {
 
 #[post("/")]
 async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, error::Error> {
-    println!("Received: {}", &form.link);
+    // TODO: Make async
     let target_url = Url::parse(&form.link)?;
 
     if !is_accepted_uri(target_url.scheme()) {
@@ -50,11 +50,10 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
     let key = insert_link(&DATABASE, target_url.as_str())?;
     let short_path = HASHER.encode(&[key]);
 
-    println!("Link created: {}", short_path);
+    println!("Link created: {} => {}", short_path, &form.link);
 
-    Ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(&*INDEX_TEMPLATE))
+    // Redirect to index
+    Ok(HttpResponse::Found().header(header::LOCATION, "/").finish())
 }
 
 #[get("/{short_path}")]
