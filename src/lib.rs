@@ -8,7 +8,6 @@ extern crate rocksdb;
 
 pub mod actions;
 pub mod error;
-pub mod math;
 
 /// Base 36 without the `l`.
 pub const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
