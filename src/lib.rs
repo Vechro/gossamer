@@ -8,6 +8,7 @@ extern crate rocksdb;
 
 pub mod actions;
 mod error;
+pub mod message;
 
 pub mod prelude {
     pub use crate::error::Error;

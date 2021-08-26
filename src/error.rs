@@ -1,6 +1,9 @@
 use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use askama::Template;
 use serde::Serialize;
 use thiserror::Error;
+
+use crate::message::{Index, Message, MessageKind};
 
 // Reference:
 // https://mattgathu.github.io/2020/04/16/actix-web-error-handling.html
@@ -15,12 +18,14 @@ pub enum Error {
     ParseError(#[from] url::ParseError),
     #[error("Failed to generate resource URI")]
     UrlGenerationError(#[from] actix_web::error::UrlGenerationError),
-    #[error("Link either has invalid scheme or hostname")]
+    #[error("Link has either invalid scheme or hostname")]
     InvalidLink,
     #[error("Database error")]
     DatabaseError(#[from] rocksdb::Error),
     #[error("Hasher error")]
     HasherError(#[from] harsh::Error),
+    #[error("Templating error")]
+    TemplateError(#[from] askama::shared::Error),
 }
 
 #[derive(Serialize)]
@@ -39,14 +44,22 @@ impl ResponseError for Error {
             Self::InvalidLink => StatusCode::BAD_REQUEST,
             Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::HasherError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::TemplateError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
     fn error_response(&self) -> HttpResponse {
-        let error_response = ErrorResponse {
-            code: self.status_code().as_u16(),
-            message: self.to_string(),
-        };
-        HttpResponse::build(self.status_code()).json(error_response)
+        let index = Index {
+            message: Some(&MessageKind::Error(Message {
+                title: &self.status_code().as_str(),
+                body: &self.to_string(),
+            })),
+        }
+        .render();
+
+        match index {
+            Ok(index) => HttpResponse::Ok().content_type("text/html").body(index),
+            Err(_) => HttpResponse::InternalServerError().finish(),
+        }
     }
 }

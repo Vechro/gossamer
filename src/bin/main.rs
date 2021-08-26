@@ -3,17 +3,20 @@ use actix_web::{
     Responder, Result,
 };
 use askama::Template;
-use keyva::{actions, is_accepted_uri, prelude::*, ADDRESS, DATABASE, HASHER, HOST};
+use gossamer::{
+    actions, is_accepted_uri,
+    message::{Index, Message, MessageKind},
+    prelude::*,
+    ADDRESS, DATABASE, HASHER, HOST,
+};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use url::Url;
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct Index;
-
 lazy_static! {
-    static ref INDEX_TEMPLATE: String = Index.render().expect("Failed to render index template");
+    static ref BLANK_INDEX_TEMPLATE: String = Index::default()
+        .render()
+        .expect("Failed to render index template");
 }
 
 #[derive(Deserialize)]
@@ -25,7 +28,7 @@ pub struct FormData {
 async fn index() -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/html")
-        .body(&*INDEX_TEMPLATE)
+        .body(&*BLANK_INDEX_TEMPLATE)
 }
 
 #[post("/")]
@@ -49,8 +52,17 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
 
     println!("Link created: {} => {}", short_path, &form.link);
 
-    // Redirect to index
-    Ok(HttpResponse::Found().header(header::LOCATION, "/").finish())
+    let index_template = Index {
+        message: Some(&MessageKind::Error(Message {
+            title: "Here's your short link!",
+            body: &short_path,
+        })),
+    }
+    .render()?;
+
+    Ok(HttpResponse::Ok()
+        .content_type("text/html")
+        .body(index_template))
 }
 
 #[get("/{short_path}")]
