@@ -7,7 +7,11 @@ use rocksdb::{BlockBasedOptions, DBWithThreadMode, MultiThreaded, Options};
 extern crate rocksdb;
 
 pub mod actions;
-pub mod error;
+mod error;
+
+pub mod prelude {
+    pub use crate::error::Error;
+}
 
 /// Base 35, note that the `l` is skipped.
 pub const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
@@ -34,12 +38,11 @@ pub fn initialize(path: &str) -> DBWithThreadMode<MultiThreaded> {
     // https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning
 
     let mut opts = Options::default();
-    let mut table_opts = BlockBasedOptions::default();
-
     opts.create_if_missing(true);
     opts.set_max_background_jobs(4);
     opts.set_bytes_per_sync(1024 * 1024);
 
+    let mut table_opts = BlockBasedOptions::default();
     table_opts.set_block_size(16 * 1024);
     table_opts.set_cache_index_and_filter_blocks(true);
     table_opts.set_pin_l0_filter_and_index_blocks_in_cache(true);

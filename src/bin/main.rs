@@ -3,10 +3,7 @@ use actix_web::{
     Responder, Result,
 };
 use askama::Template;
-use keyva::{
-    actions::{get_link_by_key, insert_link},
-    error, is_accepted_uri, ADDRESS, DATABASE, HASHER, HOST,
-};
+use keyva::{actions, is_accepted_uri, prelude::*, ADDRESS, DATABASE, HASHER, HOST};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use url::Url;
@@ -32,22 +29,22 @@ async fn index() -> impl Responder {
 }
 
 #[post("/")]
-async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, error::Error> {
+async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, crate::Error> {
     // TODO: Make async
     let target_url = Url::parse(&form.link)?;
 
     if !is_accepted_uri(target_url.scheme()) {
-        Err(error::Error::InvalidLink)?
+        Err(crate::Error::InvalidLink)?
     }
 
-    let host_str = target_url.host_str().ok_or(error::Error::InvalidLink)?;
+    let host_str = target_url.host_str().ok_or(crate::Error::InvalidLink)?;
 
     // Why would we ever want a short link to another short link?
     if host_str == &*HOST {
-        Err(error::Error::InvalidLink)?
+        Err(crate::Error::InvalidLink)?
     }
 
-    let key = insert_link(&DATABASE, target_url.as_str())?;
+    let key = actions::insert_link(&DATABASE, target_url.as_str())?;
     let short_path = HASHER.encode(&[key]);
 
     println!("Link created: {} => {}", short_path, &form.link);
@@ -61,9 +58,10 @@ async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Respo
     let link = web::block(move || {
         let decoded = HASHER
             .decode(&short_path)
-            .map_err(|e| BlockingError::Error(error::Error::HasherError(e)))?;
+            .map_err(|e| BlockingError::Error(crate::Error::HasherError(e)))?;
 
-        get_link_by_key(&DATABASE, decoded[0]).ok_or(BlockingError::Error(error::Error::NotFound))
+        actions::get_link_by_key(&DATABASE, decoded[0])
+            .ok_or(BlockingError::Error(crate::Error::NotFound))
     })
     .await?;
 
