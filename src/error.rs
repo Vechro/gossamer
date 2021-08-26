@@ -19,6 +19,8 @@ pub enum Error {
     InvalidLink,
     #[error("Database error")]
     DatabaseError(#[from] rocksdb::Error),
+    #[error("Hasher error")]
+    HasherError(#[from] harsh::Error),
 }
 
 #[derive(Serialize)]
@@ -36,6 +38,7 @@ impl ResponseError for Error {
             Self::UrlGenerationError(_) => StatusCode::BAD_REQUEST,
             Self::InvalidLink => StatusCode::BAD_REQUEST,
             Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::HasherError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

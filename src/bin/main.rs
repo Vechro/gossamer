@@ -1,6 +1,6 @@
 use actix_web::{
-    error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse,
-    HttpServer, Responder, Result,
+    error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse, HttpServer,
+    Responder, Result,
 };
 use askama::Template;
 use keyva::{
@@ -58,26 +58,18 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
 
 #[get("/{short_path}")]
 async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Responder> {
-    let result = web::block(move || {
+    let link = web::block(move || {
         let decoded = HASHER
             .decode(&short_path)
-            .map_err(|_| BlockingError::Error(format!("Failed decoding: {}", short_path)))?;
+            .map_err(|e| BlockingError::Error(error::Error::HasherError(e)))?;
 
-        get_link_by_key(&DATABASE, decoded[0])
-            .ok_or(BlockingError::Error("Failed resolving to link".to_string()))
+        get_link_by_key(&DATABASE, decoded[0]).ok_or(BlockingError::Error(error::Error::NotFound))
     })
-    .await
-    .map_err(|e| {
-        eprintln!("{}", e);
-        HttpResponse::NotFound().finish()
-    });
+    .await?;
 
-    match result {
-        Ok(link) => Ok(HttpResponse::Found()
-            .set_header(header::LOCATION, link)
-            .finish()),
-        Err(r) => Ok(r),
-    }
+    Ok(HttpResponse::Found()
+        .set_header(header::LOCATION, link)
+        .finish())
 }
 
 #[actix_web::main]

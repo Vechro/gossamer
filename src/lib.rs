@@ -9,7 +9,7 @@ extern crate rocksdb;
 pub mod actions;
 pub mod error;
 
-/// Base 36 without the `l`.
+/// Base 35, note that the `l` is skipped.
 pub const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
 lazy_static! {
