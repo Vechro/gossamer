@@ -1,15 +1,17 @@
+// use std::{fs::File, io::BufReader};
+
 use actix_web::{
     error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse, HttpServer,
     Responder, Result,
 };
 use askama::Template;
-use gossamer::{
-    actions, is_accepted_uri,
-    message::{Index, Message, MessageKind},
-    prelude::*,
-    ADDRESS, DATABASE, HASHER, HOST,
-};
+use gossamer::{actions, is_accepted_uri, message::*, prelude::*, ADDRESS, DATABASE, HASHER, HOST};
 use lazy_static::lazy_static;
+// use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
+// use rustls::{
+//     internal::pemfile::{certs, pkcs8_private_keys},
+//     NoClientAuth, ServerConfig,
+// };
 use serde::Deserialize;
 use url::Url;
 
@@ -86,7 +88,20 @@ async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Respo
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
-    println!("Starting server at {}", &*ADDRESS);
+    println!("Starting server at {}/", &*ADDRESS);
+
+    // let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+    // builder
+    //     .set_private_key_file("key.pem", SslFiletype::PEM)
+    //     .unwrap();
+    // builder.set_certificate_chain_file("cert.pem").unwrap();
+
+    // let mut config = ServerConfig::new(NoClientAuth::new());
+    // let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
+    // let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
+    // let cert_chain = certs(cert_file).unwrap();
+    // let mut keys = pkcs8_private_keys(key_file).unwrap();
+    // config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
 
     HttpServer::new(move || {
         App::new()
@@ -96,6 +111,8 @@ async fn main() -> std::io::Result<()> {
             .service(redirect)
     })
     .bind(&*ADDRESS)?
+    // .bind_rustls(&*ADDRESS, config)?
+    // .bind_openssl(&*ADDRESS, builder)?
     .run()
     .await
 }
