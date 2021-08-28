@@ -1,5 +1,3 @@
-use std::{env, fs::File, io::BufReader};
-
 use actix_web::{
     error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse, HttpServer,
     Responder, Result,
@@ -7,10 +5,6 @@ use actix_web::{
 use askama::Template;
 use gossamer::{actions, is_accepted_uri, message::*, prelude::*, ADDRESS, DATABASE, HASHER, HOST};
 use lazy_static::lazy_static;
-use rustls::{
-    internal::pemfile::{certs, pkcs8_private_keys},
-    NoClientAuth, ServerConfig,
-};
 use serde::Deserialize;
 use url::Url;
 
@@ -80,18 +74,7 @@ async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Respo
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
-    let cert_path = env::var("TLS_CERT_PATH").expect("Couldn't find TLS_CERT_PATH");
-    let key_path = env::var("TLS_KEY_PATH").expect("Couldn't find TLS_KEY_PATH");
-
-    println!("Starting server at https://{}/", &*ADDRESS);
-
-    let mut config = ServerConfig::new(NoClientAuth::new());
-    let cert_file =
-        &mut BufReader::new(File::open(cert_path).expect("Unable to read certificate file"));
-    let key_file = &mut BufReader::new(File::open(key_path).expect("Unable to read key file"));
-    let cert_chain = certs(cert_file).unwrap();
-    let mut keys = pkcs8_private_keys(key_file).unwrap();
-    config.set_single_cert(cert_chain, keys.remove(0)).unwrap();
+    println!("Starting server at http://{}/", &*ADDRESS);
 
     HttpServer::new(move || {
         App::new()
@@ -100,7 +83,7 @@ async fn main() -> std::io::Result<()> {
             .service(create_short_link)
             .service(redirect)
     })
-    .bind_rustls(&*ADDRESS, config)?
+    .bind(&*ADDRESS)?
     .run()
     .await
 }

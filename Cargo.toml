@@ -6,15 +6,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = { version = "3.3.2", features = ["rustls", "openssl"] }
+actix-web = "3.3.2"
 askama = "0.10.5"
 dotenv = "0.15.0"
-env_logger = "0.9.0"
 harsh = "0.2.1"
 lazy_static = "1.4.0"
-openssl = "0.10.36"
 rocksdb = { version = "0.17.0", features = ["multi-threaded-cf"] }
-rustls = "0.18.1"                                                  # Must be in sync with actix-web rustls version
 serde = "1.0.127"
 thiserror = "1.0.26"
 url = "2.2.2"
