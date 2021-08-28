@@ -18,9 +18,10 @@ pub mod prelude {
 pub const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
 lazy_static! {
-    pub static ref SALT: String = env::var("SALT").unwrap();
-    pub static ref HOST: String = env::var("HOST").unwrap();
-    pub static ref PORT: String = env::var("PORT").unwrap();
+    static ref SALT: String = env::var("SALT").unwrap();
+    pub static ref DISPLAY_HOST: String = env::var("VANITY_HOST").unwrap();
+    static ref HOST: String = env::var("HOST").unwrap();
+    static ref PORT: String = env::var("PORT").unwrap();
     pub static ref ADDRESS: String = format!("{}:{}", *HOST, *PORT);
     static ref DATABASE_PATH: String = env::var("DATABASE_PATH").unwrap();
     pub static ref DATABASE: DBWithThreadMode<MultiThreaded> = initialize(&*DATABASE_PATH);

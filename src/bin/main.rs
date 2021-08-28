@@ -3,7 +3,9 @@ use actix_web::{
     Responder, Result,
 };
 use askama::Template;
-use gossamer::{actions, is_accepted_uri, message::*, prelude::*, ADDRESS, DATABASE, HASHER, HOST};
+use gossamer::{
+    actions, is_accepted_uri, message::*, prelude::*, ADDRESS, DATABASE, DISPLAY_HOST, HASHER,
+};
 use lazy_static::lazy_static;
 use serde::Deserialize;
 use url::Url;
@@ -35,14 +37,14 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
     let host_str = target_url.host_str().ok_or(crate::Error::InvalidLink)?;
 
     // Why would we ever want a short link to another short link?
-    if host_str == &*HOST {
+    if host_str == &*DISPLAY_HOST {
         Err(crate::Error::InvalidLink)?
     }
 
     let key = actions::insert_link(&DATABASE, target_url.as_str())?;
     let short_path = HASHER.encode(&[key]);
 
-    println!("Link created: {} => {}", short_path, &form.link);
+    println!("Link created: http://{}/{} => {}", &*DISPLAY_HOST, short_path, &form.link);
 
     let index_template = Index {
         message: Some(&MessageKind::Error(Message {
