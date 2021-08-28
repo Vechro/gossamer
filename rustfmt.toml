@@ -6,6 +6,7 @@ format_strings = true
 group_imports = "StdExternalCrate"
 reorder_impl_items = true
 use_field_init_shorthand = true
+use_small_heuristics = "Max"
 use_try_shorthand = true
 version = "Two"
 wrap_comments = true

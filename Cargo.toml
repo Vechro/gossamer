@@ -26,6 +26,3 @@ path = "src/lib.rs"
 [[bin]]
 name = "gossamer"
 path = "src/bin/main.rs"
-
-[profile.dev.package."*"]
-opt-level = 3
