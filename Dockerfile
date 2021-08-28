@@ -1,6 +1,6 @@
 FROM rust:slim
 
-COPY . /data/gossamer
+COPY . .
 
 RUN apt-get update && apt-get install -y clang
 RUN cargo install --path .

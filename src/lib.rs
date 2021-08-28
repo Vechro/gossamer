@@ -18,12 +18,14 @@ pub mod prelude {
 pub const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
 lazy_static! {
-    static ref SALT: String = env::var("SALT").unwrap();
-    pub static ref DISPLAY_HOST: String = env::var("VANITY_HOST").unwrap();
-    static ref HOST: String = env::var("HOST").unwrap();
-    static ref PORT: String = env::var("PORT").unwrap();
+    static ref SALT: String = env::var("SALT").expect("Unable to find SALT from env");
+    pub static ref VANITY_HOST: String =
+        env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env");
+    static ref HOST: String = env::var("HOST").expect("Unable to find HOST from env");
+    static ref PORT: String = env::var("PORT").expect("Unable to find PORT from env");
     pub static ref ADDRESS: String = format!("{}:{}", *HOST, *PORT);
-    static ref DATABASE_PATH: String = env::var("DATABASE_PATH").unwrap();
+    static ref DATABASE_PATH: String =
+        env::var("DATABASE_PATH").expect("Unable to find DATABASE_PATH from env");
     pub static ref DATABASE: DBWithThreadMode<MultiThreaded> = initialize(&*DATABASE_PATH);
     pub static ref HASHER: Harsh = Harsh::builder()
         .alphabet(ALPHABET)
@@ -34,8 +36,6 @@ lazy_static! {
 }
 
 pub fn initialize(path: &str) -> DBWithThreadMode<MultiThreaded> {
-    println!("Initializing database at: {}", path);
-
     // We take the suggested defaults from RocksDB Wiki
     // https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning
 

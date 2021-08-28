@@ -36,7 +36,7 @@
     {% when MessageKind::Link with (message) %}
     <article style="margin:.5em;grid-row:3;grid-column:2">
       <h3>{{ message.title }}</h3>
-      <p><a>{{ message.body }}</a></p>
+      <p><a href="{{ message.body }}" target="_blank" rel="noreferrer noopener">{{ message.body }}</a></p>
     </article>
     {% when MessageKind::Error with (message) %}
     <article style="margin:.5em;grid-row:3;grid-column:2">
