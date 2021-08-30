@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_web::{
     error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse, HttpServer,
     Responder, Result,
@@ -46,12 +47,10 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
 
     println!("Link created: http://{}/{} => {}", &*VANITY_HOST, short_path, &form.link);
 
-    let index_template = Index {
-        message: Some(&MessageKind::Link(Message {
-            title: "Here's your short link!",
-            body: &format!("https://{}/{}", &*VANITY_HOST, short_path),
-        })),
-    }
+    let index_template = Index::new(Some(&MessageKind::Link(Message {
+        title: "Here's your short link!",
+        body: &format!("https://{}/{}", &*VANITY_HOST, short_path),
+    })))
     .render()?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
@@ -84,6 +83,7 @@ async fn main() -> std::io::Result<()> {
             .service(index)
             .service(create_short_link)
             .service(redirect)
+            .service(Files::new("/static", "./static"))
     })
     .bind(&*ADDRESS)?
     .run()

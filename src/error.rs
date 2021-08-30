@@ -49,12 +49,10 @@ impl ResponseError for Error {
     }
 
     fn error_response(&self) -> HttpResponse {
-        let index = Index {
-            message: Some(&MessageKind::Error(Message {
-                title: &self.status_code().as_str(),
-                body: &self.to_string(),
-            })),
-        }
+        let index = Index::new(Some(&MessageKind::Error(Message {
+            title: &self.status_code().as_str(),
+            body: &self.to_string(),
+        })))
         .render();
 
         match index {
