@@ -1,7 +1,7 @@
 use actix_files::Files;
 use actix_web::{
-    error::BlockingError, get, http::header, middleware, post, web, App, HttpResponse, HttpServer,
-    Responder, Result,
+    error::BlockingError, get, http::header, post, web, App, HttpResponse, HttpServer, Responder,
+    Result,
 };
 use askama::Template;
 use gossamer::{
@@ -72,7 +72,6 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(middleware::Logger::default())
             .service(index)
             .service(create_short_link)
             .service(redirect)
