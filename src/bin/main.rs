@@ -5,16 +5,11 @@ use actix_web::{
 };
 use askama::Template;
 use gossamer::{
-    actions, is_accepted_uri, message::*, prelude::*, ADDRESS, DATABASE, HASHER, VANITY_HOST,
+    actions, is_accepted_uri, message::*, prelude::*, ADDRESS, BLANK_INDEX_TEMPLATE, DATABASE,
+    HASHER, VANITY_HOST,
 };
-use lazy_static::lazy_static;
 use serde::Deserialize;
 use url::Url;
-
-lazy_static! {
-    static ref BLANK_INDEX_TEMPLATE: String =
-        Index::default().render().expect("Failed to render index template");
-}
 
 #[derive(Deserialize)]
 pub struct FormData {
@@ -44,8 +39,6 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
 
     let key = actions::insert_link(&DATABASE, target_url.as_str())?;
     let short_path = HASHER.encode(&[key]);
-
-    println!("Link created: http://{}/{} => {}", &*VANITY_HOST, short_path, &form.link);
 
     let index_template = Index::new(Some(&MessageKind::Link(Message {
         title: "Here's your short link!",

@@ -3,7 +3,9 @@
 use std::env;
 use std::lazy::SyncLazy;
 
+use askama::Template;
 use harsh::Harsh;
+use message::Index;
 use rocksdb::{BlockBasedOptions, DBWithThreadMode, MultiThreaded, Options};
 
 extern crate rocksdb;
@@ -54,6 +56,8 @@ pub static HASHER: SyncLazy<Harsh> = SyncLazy::new(|| {
         .build()
         .expect("Unable to construct hasher")
 });
+pub static BLANK_INDEX_TEMPLATE: SyncLazy<String> =
+    SyncLazy::new(|| Index::default().render().expect("Failed to render index template"));
 
 pub fn is_accepted_uri(uri: &str) -> bool {
     match uri {
