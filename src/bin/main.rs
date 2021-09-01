@@ -1,8 +1,5 @@
 use actix_files::Files;
-use actix_web::{
-    error::BlockingError, get, http::header, post, web, App, HttpResponse, HttpServer, Responder,
-    Result,
-};
+use actix_web::{get, http::header, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use askama::Template;
 use gossamer::{
     actions, is_accepted_uri, message::*, prelude::*, ADDRESS, BLANK_INDEX_TEMPLATE, DATABASE,
@@ -22,12 +19,11 @@ async fn index() -> impl Responder {
 }
 
 #[post("/")]
-async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, crate::Error> {
-    // TODO: Make async
-    let target_url = Url::parse(&form.link)?;
+async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> {
+    let target_url = Url::parse(&form.link).map_err(crate::Error::ParseError)?;
 
     if !is_accepted_uri(target_url.scheme()) {
-        Err(crate::Error::InvalidLink)?
+        Err(crate::Error::InvalidScheme)?
     }
 
     let host_str = target_url.host_str().ok_or(crate::Error::InvalidLink)?;
@@ -37,27 +33,28 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder, 
         Err(crate::Error::InvalidLink)?
     }
 
-    let key = actions::insert_link(&DATABASE, target_url.as_str())?;
+    let key = web::block(move || {
+        actions::insert_link(&DATABASE, target_url.as_str()).map_err(crate::Error::DatabaseError)
+    })
+    .await?;
     let short_path = HASHER.encode(&[key]);
 
     let index_template = Index::new(Some(&MessageKind::Link(Message {
         title: "Here's your short link!",
         body: &format!("https://{}/{}", &*VANITY_HOST, short_path),
     })))
-    .render()?;
+    .render()
+    .map_err(crate::Error::TemplateError)?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
 }
 
 #[get("/{short_path}")]
 async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Responder> {
-    let link = web::block(move || {
-        let decoded = HASHER
-            .decode(&short_path)
-            .map_err(|e| BlockingError::Error(crate::Error::HasherError(e)))?;
+    let decoded = HASHER.decode(&short_path).map_err(crate::Error::HasherError)?;
 
-        actions::get_link_by_key(&DATABASE, decoded[0])
-            .ok_or(BlockingError::Error(crate::Error::NotFound))
+    let link = web::block(move || {
+        actions::get_link_by_key(&DATABASE, decoded[0]).ok_or(crate::Error::NotFound)
     })
     .await?;
 

@@ -18,8 +18,10 @@ pub enum Error {
     ParseError(#[from] url::ParseError),
     #[error("Failed to generate resource URI")]
     UrlGenerationError(#[from] actix_web::error::UrlGenerationError),
-    #[error("Link has either invalid scheme or hostname")]
+    #[error("Link has invalid hostname")]
     InvalidLink,
+    #[error("Link has invalid scheme")]
+    InvalidScheme,
     #[error("Database error")]
     DatabaseError(#[from] rocksdb::Error),
     #[error("Hasher error")]
@@ -42,6 +44,7 @@ impl ResponseError for Error {
             Self::ParseError(_) => StatusCode::BAD_REQUEST,
             Self::UrlGenerationError(_) => StatusCode::BAD_REQUEST,
             Self::InvalidLink => StatusCode::BAD_REQUEST,
+            Self::InvalidScheme => StatusCode::BAD_REQUEST,
             Self::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::HasherError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::TemplateError(_) => StatusCode::INTERNAL_SERVER_ERROR,
