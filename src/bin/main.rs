@@ -15,7 +15,7 @@ pub struct FormData {
 
 #[get("/")]
 async fn index() -> impl Responder {
-    HttpResponse::Ok().content_type("text/html").body(&*BLANK_INDEX_TEMPLATE)
+    HttpResponse::Ok().content_type("text/html").body(&**BLANK_INDEX_TEMPLATE)
 }
 
 #[post("/")]
@@ -36,7 +36,7 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
     let key = web::block(move || {
         actions::insert_link(&DATABASE, target_url.as_str()).map_err(crate::Error::DatabaseError)
     })
-    .await?;
+    .await??;
     let short_path = HASHER.encode(&[key]);
 
     let index_template = Index::new(Some(&MessageKind::Link(Message {
@@ -50,15 +50,16 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
 }
 
 #[get("/{short_path}")]
-async fn redirect(web::Path(short_path): web::Path<String>) -> Result<impl Responder> {
+async fn redirect(short_path: web::Path<String>) -> Result<impl Responder> {
+    let short_path = short_path.into_inner();
     let decoded = HASHER.decode(&short_path).map_err(crate::Error::HasherError)?;
 
     let link = web::block(move || {
         actions::get_link_by_key(&DATABASE, decoded[0]).ok_or(crate::Error::NotFound)
     })
-    .await?;
+    .await??;
 
-    Ok(HttpResponse::Found().set_header(header::LOCATION, link).finish())
+    Ok(HttpResponse::Found().insert_header((header::LOCATION, link)).finish())
 }
 
 #[actix_web::main]

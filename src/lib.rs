@@ -32,21 +32,23 @@ pub static ADDRESS: SyncLazy<String> = SyncLazy::new(|| {
 });
 pub static DATABASE: SyncLazy<DBWithThreadMode<MultiThreaded>> = SyncLazy::new(|| {
     let path: &str = &env::var("DATABASE_PATH").expect("Unable to find DATABASE_PATH from env");
+
     // We take the suggested defaults from RocksDB Wiki
     // https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning
+    let mut options = Options::default();
+    options.create_if_missing(true);
+    options.set_max_background_jobs(4);
+    options.set_bytes_per_sync(1 << 20);
 
-    let mut opts = Options::default();
-    opts.create_if_missing(true);
-    opts.set_max_background_jobs(4);
-    opts.set_bytes_per_sync(1024 * 1024);
+    let mut table_options = BlockBasedOptions::default();
+    table_options.set_block_size(16 * 1024);
+    table_options.set_cache_index_and_filter_blocks(true);
+    table_options.set_pin_l0_filter_and_index_blocks_in_cache(true);
+    table_options.set_format_version(5);
 
-    let mut table_opts = BlockBasedOptions::default();
-    table_opts.set_block_size(16 * 1024);
-    table_opts.set_cache_index_and_filter_blocks(true);
-    table_opts.set_pin_l0_filter_and_index_blocks_in_cache(true);
-    table_opts.set_format_version(5);
+    options.set_block_based_table_factory(&table_options);
 
-    rocksdb::DB::open_default(path).expect("Unable to open database")
+    rocksdb::DB::open(&options, path).expect("Unable to open database")
 });
 pub static HASHER: SyncLazy<Harsh> = SyncLazy::new(|| {
     Harsh::builder()
