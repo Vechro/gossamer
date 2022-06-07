@@ -1,10 +1,20 @@
-FROM rust:slim
+# --- Builder image ---
+FROM rust:slim as builder
+
+WORKDIR /gossamer
 
 COPY . .
 
 RUN apt-get update && apt-get install -y clang
-RUN cargo install --path .
+RUN cargo build --release
 
-VOLUME [ "/var/lib/gossamer" ]
+# --- Final image ---
+FROM gcr.io/distroless/cc
 
-CMD ["gossamer"]
+WORKDIR /gossamer
+
+COPY --from=builder /gossamer/target/release/gossamer .
+
+VOLUME ["/var/lib/gossamer"]
+
+CMD ["/gossamer/gossamer"]
