@@ -1,6 +1,6 @@
 # Gossamer
 
-![](https://raw.githubusercontent.com/Vechro/gossamer/main/static/meta-image.png)
+![](https://raw.githubusercontent.com/Vechro/gossamer/main/static/gossamer.png)
 
 A very simple link shortening service. Built on [Actix Web](https://actix.rs/) with [RocksDB](https://rocksdb.org/).
 
