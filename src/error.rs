@@ -24,7 +24,7 @@ pub enum Error {
     InvalidScheme,
     #[error("Database error")]
     DatabaseError(#[from] rocksdb::Error),
-    #[error("Hasher error")]
+    #[error("Unable to decode short link")]
     HasherError(#[from] harsh::Error),
     #[error("Templating error")]
     TemplateError(#[from] askama::shared::Error),
