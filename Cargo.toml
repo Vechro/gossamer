@@ -11,7 +11,9 @@ actix-web = "4.0.1"
 askama = "0.11.1"
 dotenv = "0.15.0"
 harsh = "0.2.2"
-rocksdb = { version = "0.18.0", features = ["multi-threaded-cf"] }
+rocksdb = { git = "https://github.com/rust-rocksdb/rust-rocksdb.git", rev = "ef8724679857139ede30672a8c478b6ade5ef0a4", features = [
+  "multi-threaded-cf",
+] }
 serde = "1.0.137"
 thiserror = "1.0.31"
 url = "2.2.2"
