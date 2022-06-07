@@ -6,6 +6,9 @@
     <meta name="title" content="Gossamer — Simple Link Shortener">
     <meta name="description" content="Gossamer lets you create a memorable short link to any URL!">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text x='-3' y='14'>🕸️</text></svg>"
+      type="image/svg+xml" />
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://{{ vanity_host }}/">
     <meta property="og:title" content="Gossamer — Simple Link Shortener">
@@ -26,7 +29,7 @@
         --input-text-color: initial;
         --input-bg-color: hsl(36 30% 87%);
         --button-color: hsl(34 77% 50%);
-        --shadow-color: hsl(34 77% 50% / 0.15);
+        --shadow-color: hsl(34 77% 50% / .15);
       }
 
       @media (prefers-color-scheme: dark) {
@@ -37,6 +40,7 @@
           --input-bg-color: hsl(155, 15%, 37%);
           --button-color: hsl(34 72% 50%);
         }
+
         input::placeholder {
           color: var(--input-text-color);
           opacity: .54;
