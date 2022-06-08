@@ -1,6 +1,5 @@
 use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use askama::Template;
-use serde::Serialize;
 use thiserror::Error;
 
 use crate::message::{Index, Message, MessageKind};
@@ -28,12 +27,6 @@ pub enum Error {
     HasherError(#[from] harsh::Error),
     #[error("Templating error")]
     TemplateError(#[from] askama::shared::Error),
-}
-
-#[derive(Serialize)]
-struct ErrorResponse {
-    code: u16,
-    message: String,
 }
 
 impl ResponseError for Error {
