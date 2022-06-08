@@ -31,7 +31,7 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
     let host_str = target_url.host_str().ok_or(crate::Error::InvalidLink)?;
 
     // Why would we ever want a short link to another short link?
-    if host_str == &*VANITY_HOST {
+    if host_str == *VANITY_HOST {
         Err(crate::Error::InvalidLink)?
     }
 

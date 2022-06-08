@@ -26,8 +26,8 @@ pub static VANITY_HOST: SyncLazy<String> =
 pub static ADDRESS: SyncLazy<String> = SyncLazy::new(|| {
     format!(
         "{}:{}",
-        env::var("HOST").unwrap_or("0.0.0.0".to_string()),
-        env::var("PORT").unwrap_or("80".to_string())
+        env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_owned()),
+        env::var("PORT").unwrap_or_else(|_| "80".to_owned())
     )
 });
 pub static DATABASE: SyncLazy<DBWithThreadMode<MultiThreaded>> = SyncLazy::new(|| {
