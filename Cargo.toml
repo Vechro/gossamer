@@ -14,8 +14,8 @@ harsh = "0.2.2"
 rocksdb = { git = "https://github.com/rust-rocksdb/rust-rocksdb.git", rev = "ef8724679857139ede30672a8c478b6ade5ef0a4", features = [
   "multi-threaded-cf",
 ] }
-serde = "1.0.137"
-thiserror = "1.0.31"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
 url = "2.2.2"
 
 [lib]
