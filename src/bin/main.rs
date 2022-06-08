@@ -1,4 +1,6 @@
-use actix_files::Files;
+use std::path::PathBuf;
+
+use actix_files::NamedFile;
 use actix_web::{get, http::header, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use askama::Template;
 use gossamer::{
@@ -49,6 +51,15 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
 }
 
+// General case: +\\..+
+#[get("/{filename:robots\\.txt|gossamer\\.png}")]
+async fn serve_file(filename: web::Path<String>) -> Result<impl Responder> {
+    let filename = filename.into_inner();
+    let path: PathBuf = format!("./static/{filename}").parse()?;
+
+    Ok(NamedFile::open_async(path).await?)
+}
+
 #[get("/{short_path}")]
 async fn redirect(short_path: web::Path<String>) -> Result<impl Responder> {
     let short_path = short_path.into_inner();
@@ -72,8 +83,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(index)
             .service(create_short_link)
+            .service(serve_file)
             .service(redirect)
-            .service(Files::new("/static", "./static"))
     })
     .bind(&*ADDRESS)?
     .run()
