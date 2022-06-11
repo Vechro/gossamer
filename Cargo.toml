@@ -1,9 +1,7 @@
 [package]
 name = "gossamer"
 version = "0.1.0"
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2021"
 
 [dependencies]
 actix-files = "0.6.0"
@@ -27,6 +25,4 @@ name = "gossamer"
 path = "src/bin/main.rs"
 
 [profile.release]
-codegen-units = 1
-opt-level = 3
-lto = true
+lto = "thin"
