@@ -51,7 +51,6 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
 }
 
-// General case: +\\..+
 #[get("/{filename:robots\\.txt|gossamer\\.png}")]
 async fn serve_file(filename: web::Path<String>) -> Result<impl Responder> {
     let filename = filename.into_inner();

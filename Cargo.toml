@@ -4,16 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-files = "0.6.0"
-actix-web = "4.0.1"
+actix-files = "0.6.2"
+actix-web = "4.1.0"
 askama = "0.11.1"
 dotenv = "0.15.0"
 harsh = "0.2.2"
-rocksdb = { git = "https://github.com/rust-rocksdb/rust-rocksdb.git", rev = "ef8724679857139ede30672a8c478b6ade5ef0a4", features = [
-  "multi-threaded-cf",
-] }
-serde = { version = "1.0", features = ["derive"] }
-thiserror = "1.0"
+rocksdb = { version = "0.19.0", features = ["multi-threaded-cf"] }
+serde = { version = "1.0.144", features = ["derive"] }
+thiserror = "1.0.32"
 url = "2.2.2"
 
 [lib]
