@@ -1,7 +1,7 @@
 #![feature(once_cell)]
 
 use std::env;
-use std::lazy::SyncLazy;
+use std::sync::LazyLock;
 
 use askama::Template;
 use harsh::Harsh;
@@ -21,16 +21,16 @@ pub mod prelude {
 /// Base 35, note that the `l` is skipped.
 const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
-pub static VANITY_HOST: SyncLazy<String> =
-    SyncLazy::new(|| env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env"));
-pub static ADDRESS: SyncLazy<String> = SyncLazy::new(|| {
+pub static VANITY_HOST: LazyLock<String> =
+    LazyLock::new(|| env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env"));
+pub static ADDRESS: LazyLock<String> = LazyLock::new(|| {
     format!(
         "{}:{}",
         env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_owned()),
         env::var("PORT").unwrap_or_else(|_| "80".to_owned())
     )
 });
-pub static DATABASE: SyncLazy<DBWithThreadMode<MultiThreaded>> = SyncLazy::new(|| {
+pub static DATABASE: LazyLock<DBWithThreadMode<MultiThreaded>> = LazyLock::new(|| {
     let path: &str = &env::var("DATABASE_PATH").expect("Unable to find DATABASE_PATH from env");
 
     // We take the suggested defaults from RocksDB Wiki
@@ -50,7 +50,7 @@ pub static DATABASE: SyncLazy<DBWithThreadMode<MultiThreaded>> = SyncLazy::new(|
 
     rocksdb::DB::open(&options, path).expect("Unable to open database")
 });
-pub static HASHER: SyncLazy<Harsh> = SyncLazy::new(|| {
+pub static HASHER: LazyLock<Harsh> = LazyLock::new(|| {
     Harsh::builder()
         .alphabet(ALPHABET)
         .salt(&*env::var("SALT").expect("Unable to find SALT from env"))
@@ -58,8 +58,8 @@ pub static HASHER: SyncLazy<Harsh> = SyncLazy::new(|| {
         .build()
         .expect("Unable to construct hasher")
 });
-pub static BLANK_INDEX_TEMPLATE: SyncLazy<String> =
-    SyncLazy::new(|| Index::default().render().expect("Failed to render index template"));
+pub static BLANK_INDEX_TEMPLATE: LazyLock<String> =
+    LazyLock::new(|| Index::default().render().expect("Failed to render index template"));
 
 pub fn is_accepted_uri(uri: &str) -> bool {
     match uri {
