@@ -20,7 +20,7 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "gossamer"
-path = "src/bin/main.rs"
+path = "src/main.rs"
 
 [profile.release]
 lto = "thin"
