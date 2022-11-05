@@ -1,6 +1,3 @@
-use std::path::PathBuf;
-
-use actix_files::NamedFile;
 use actix_web::{get, http::header, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use askama::Template;
 use gossamer::{actions, configuration::*, error::*, message::*};
@@ -28,7 +25,7 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
     let host_str = target_url.host_str().ok_or(Error::InvalidLink)?;
 
     // Why would we ever want a short link to another short link?
-    if host_str == *VANITY_HOST {
+    if host_str == *VANITY_DOMAIN {
         Err(Error::InvalidLink)?
     }
 
@@ -40,20 +37,12 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
 
     let index_template = Index::new(Some(&MessageKind::Link(Message {
         title: "Here's your short link!",
-        body: &format!("https://{}/{}", &*VANITY_HOST, short_path),
+        body: &format!("https://{}/{}", &*VANITY_DOMAIN, short_path),
     })))
     .render()
     .map_err(Error::TemplateError)?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
-}
-
-#[get("/{filename:robots\\.txt|gossamer\\.png}")]
-async fn serve_file(filename: web::Path<String>) -> Result<impl Responder> {
-    let filename = filename.into_inner();
-    let path: PathBuf = format!("./static/{filename}").parse()?;
-
-    Ok(NamedFile::open_async(path).await?)
 }
 
 #[get("/{short_path}")]
@@ -79,7 +68,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(index)
             .service(create_short_link)
-            .service(serve_file)
             .service(redirect)
     })
     .bind(&*ADDRESS)?

@@ -1,11 +1,12 @@
 use askama::Template;
 
-use crate::configuration::VANITY_HOST;
+use crate::configuration::{ASSETS_URL, VANITY_DOMAIN};
 
 #[derive(Template, Clone, Copy)]
 #[template(path = "index.html")]
 pub struct Index<'a> {
-    pub vanity_host: &'a str,
+    pub vanity_domain: &'a str,
+    pub assets_url: &'a str,
     pub message: Option<&'a MessageKind<'a>>,
 }
 
@@ -17,7 +18,7 @@ impl<'a> Index<'a> {
 
 impl Default for Index<'_> {
     fn default() -> Self {
-        Self { vanity_host: &VANITY_HOST, message: Default::default() }
+        Self { vanity_domain: &VANITY_DOMAIN, assets_url: &ASSETS_URL, message: Default::default() }
     }
 }
 

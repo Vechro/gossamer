@@ -10,14 +10,18 @@ use crate::message::Index;
 /// Base 35, note that the `l` is skipped.
 const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
-pub static VANITY_HOST: Lazy<String> =
-    Lazy::new(|| env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env"));
+pub static VANITY_DOMAIN: Lazy<String> =
+    Lazy::new(|| env::var("VANITY_DOMAIN").expect("Unable to find VANITY_DOMAIN from env"));
+
+pub static ASSETS_URL: Lazy<String> = Lazy::new(|| {
+    env::var("ASSETS_URL").unwrap_or_else(|_| format!("{}/assets", *VANITY_DOMAIN))
+});
 
 pub static ADDRESS: Lazy<String> = Lazy::new(|| {
     format!(
         "{}:{}",
-        env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_owned()),
-        env::var("PORT").unwrap_or_else(|_| "80".to_owned())
+        env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
+        env::var("PORT").unwrap_or_else(|_| "80".to_string())
     )
 });
 

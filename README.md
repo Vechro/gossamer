@@ -14,7 +14,9 @@ You will need a `.env` file (or some other method to set environment variables) 
 
 ```sh
 # The server doesn't know its own domain name, so you'll have to provide one
-VANITY_HOST = go.vech.ro
+VANITY_DOMAIN = go.vech.ro
+# Where the static assets are hosted
+ASSETS_URL = vech.ro/assets
 # These two are optional, this will default to 0.0.0.0
 HOST = 127.0.0.1
 # This will default to 80

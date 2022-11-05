@@ -15,7 +15,6 @@ FROM gcr.io/distroless/cc
 WORKDIR /gossamer
 
 COPY --from=builder /gossamer/target/release/gossamer .
-COPY --from=builder /gossamer/static ./static
 
 VOLUME ["/var/lib/gossamer"]
 
