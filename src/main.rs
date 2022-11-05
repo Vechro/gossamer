@@ -3,10 +3,7 @@ use std::path::PathBuf;
 use actix_files::NamedFile;
 use actix_web::{get, http::header, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use askama::Template;
-use gossamer::{
-    actions, is_accepted_uri, message::*, prelude::*, ADDRESS, BLANK_INDEX_TEMPLATE, DATABASE,
-    HASHER, VANITY_HOST,
-};
+use gossamer::{actions, configuration::*, error::*, message::*};
 use serde::Deserialize;
 use url::Url;
 
@@ -22,21 +19,21 @@ async fn index() -> impl Responder {
 
 #[post("/")]
 async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> {
-    let target_url = Url::parse(&form.link).map_err(crate::Error::ParseError)?;
+    let target_url = Url::parse(&form.link).map_err(Error::ParseError)?;
 
     if !is_accepted_uri(target_url.scheme()) {
-        Err(crate::Error::InvalidScheme)?
+        Err(Error::InvalidScheme)?
     }
 
-    let host_str = target_url.host_str().ok_or(crate::Error::InvalidLink)?;
+    let host_str = target_url.host_str().ok_or(Error::InvalidLink)?;
 
     // Why would we ever want a short link to another short link?
     if host_str == *VANITY_HOST {
-        Err(crate::Error::InvalidLink)?
+        Err(Error::InvalidLink)?
     }
 
     let key = web::block(move || {
-        actions::insert_link(&DATABASE, target_url.as_str()).map_err(crate::Error::DatabaseError)
+        actions::insert_link(&DATABASE, target_url.as_str()).map_err(Error::DatabaseError)
     })
     .await??;
     let short_path = HASHER.encode(&[key]);
@@ -46,7 +43,7 @@ async fn create_short_link(form: web::Form<FormData>) -> Result<impl Responder> 
         body: &format!("https://{}/{}", &*VANITY_HOST, short_path),
     })))
     .render()
-    .map_err(crate::Error::TemplateError)?;
+    .map_err(Error::TemplateError)?;
 
     Ok(HttpResponse::Ok().content_type("text/html").body(index_template))
 }
@@ -62,16 +59,16 @@ async fn serve_file(filename: web::Path<String>) -> Result<impl Responder> {
 #[get("/{short_path}")]
 async fn redirect(short_path: web::Path<String>) -> Result<impl Responder> {
     let short_path = short_path.into_inner();
-    let decoded = HASHER.decode(&short_path).map_err(crate::Error::HasherError)?;
+    let decoded = HASHER.decode(&short_path).map_err(Error::HasherError)?;
 
-    let link = web::block(move || {
-        actions::get_link_by_key(&DATABASE, decoded[0]).ok_or(crate::Error::NotFound)
-    })
-    .await??;
+    let link =
+        web::block(move || actions::get_link_by_key(&DATABASE, decoded[0]).ok_or(Error::NotFound))
+            .await??;
 
     Ok(HttpResponse::Found().insert_header((header::LOCATION, link)).finish())
 }
 
+#[rustfmt::skip]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();

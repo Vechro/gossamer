@@ -1,6 +1,6 @@
 use askama::Template;
 
-use crate::VANITY_HOST;
+use crate::configuration::VANITY_HOST;
 
 #[derive(Template, Clone, Copy)]
 #[template(path = "index.html")]
