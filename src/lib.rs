@@ -1,11 +1,9 @@
-#![feature(once_cell)]
-
 use std::env;
-use std::sync::LazyLock;
 
 use askama::Template;
 use harsh::Harsh;
 use message::Index;
+use once_cell::sync::Lazy;
 use rocksdb::{BlockBasedOptions, DBWithThreadMode, MultiThreaded, Options};
 
 extern crate rocksdb;
@@ -21,16 +19,16 @@ pub mod prelude {
 /// Base 35, note that the `l` is skipped.
 const ALPHABET: &str = "abcdefghijkmnopqrstuvwxyz0123456789";
 
-pub static VANITY_HOST: LazyLock<String> =
-    LazyLock::new(|| env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env"));
-pub static ADDRESS: LazyLock<String> = LazyLock::new(|| {
+pub static VANITY_HOST: Lazy<String> =
+    Lazy::new(|| env::var("VANITY_HOST").expect("Unable to find VANITY_HOST from env"));
+pub static ADDRESS: Lazy<String> = Lazy::new(|| {
     format!(
         "{}:{}",
         env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_owned()),
         env::var("PORT").unwrap_or_else(|_| "80".to_owned())
     )
 });
-pub static DATABASE: LazyLock<DBWithThreadMode<MultiThreaded>> = LazyLock::new(|| {
+pub static DATABASE: Lazy<DBWithThreadMode<MultiThreaded>> = Lazy::new(|| {
     let path: &str = &env::var("DATABASE_PATH").expect("Unable to find DATABASE_PATH from env");
 
     // We take the suggested defaults from RocksDB Wiki
@@ -50,7 +48,7 @@ pub static DATABASE: LazyLock<DBWithThreadMode<MultiThreaded>> = LazyLock::new(|
 
     rocksdb::DB::open(&options, path).expect("Unable to open database")
 });
-pub static HASHER: LazyLock<Harsh> = LazyLock::new(|| {
+pub static HASHER: Lazy<Harsh> = Lazy::new(|| {
     Harsh::builder()
         .alphabet(ALPHABET)
         .salt(&*env::var("SALT").expect("Unable to find SALT from env"))
@@ -58,13 +56,13 @@ pub static HASHER: LazyLock<Harsh> = LazyLock::new(|| {
         .build()
         .expect("Unable to construct hasher")
 });
-pub static BLANK_INDEX_TEMPLATE: LazyLock<String> =
-    LazyLock::new(|| Index::default().render().expect("Failed to render index template"));
+pub static BLANK_INDEX_TEMPLATE: Lazy<String> =
+    Lazy::new(|| Index::default().render().expect("Failed to render index template"));
 
 pub fn is_accepted_uri(uri: &str) -> bool {
     match uri {
         "http" | "https" => true,
-        "ftp" | "sftp" | "ftps" => true,
+        "ftp" | "sftp" => true,
         "spotify" => true,
         "steam" => true,
         "git" => true,
