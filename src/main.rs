@@ -1,4 +1,4 @@
-use actix_web::{get, http::header, post, web, App, HttpResponse, HttpServer, Responder, Result};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use askama::Template;
 use gossamer::{actions, configuration::*, error::*, message::*};
 use serde::Deserialize;
@@ -54,7 +54,7 @@ async fn redirect(short_path: web::Path<String>) -> Result<impl Responder> {
         web::block(move || actions::get_link_by_key(&DATABASE, decoded[0]).ok_or(Error::NotFound))
             .await??;
 
-    Ok(HttpResponse::Found().insert_header((header::LOCATION, link)).finish())
+    Ok(web::Redirect::to(link))
 }
 
 #[rustfmt::skip]
