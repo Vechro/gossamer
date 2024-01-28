@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y clang
 RUN cargo build --release
 
 # --- Final image ---
-FROM gcr.io/distroless/cc
+FROM gcr.io/distroless/cc-debian12
 
 WORKDIR /gossamer
 
